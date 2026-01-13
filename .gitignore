@@ -1,0 +1,24 @@
+*
+
+# Ignore images
+# *.svg
+
+# Never ignore any Jupyter notebook
+# !*.ipynb
+# !*.ipynb
+
+!01-heatmaps.ipynb
+!03-promoter-positions.ipynb
+
+# Except this folder
+!supplementary_online_material
+!supplementary_online_material/*.pdf
+
+# Output/
+# pickles/
+# temp/
+# debug_log.txt
+
+# Except gitignore
+!.gitignore
+
