@@ -9,8 +9,8 @@ limbo/
 !*.ipynb
 
 # Except this folder
-!supplementary_online_material
-!supplementary_online_material/*.pdf
+Supplementary online material
+Supplementary online material/*.pdf
 
 # Output/
 # pickles/
