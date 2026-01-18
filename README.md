@@ -15,7 +15,7 @@ The Jupyter notebooks are numbered in an increasing order based on the flow of f
 ## Requirements
 
 ## License
-“All rights reserved. No reuse or distribution until acceptance”
+All rights reserved. No reuse or distribution until acceptance
 
 ## Contact
 For questions, please contact Yun Zhang Lab.
