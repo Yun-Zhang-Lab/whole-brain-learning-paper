@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "droplet-assay-analyzer"
+version = "1.0.0"
+description = "Automated image analysis and behavioral turn detection for droplet-based assays"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+keywords = ["image-analysis", "behavioral-analysis", "droplet-assay", "worm-tracking"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    "numpy>=1.20.0",
+    "pandas>=1.3.0",
+    "scikit-image>=0.18.0",
+    "opencv-python>=4.5.0",
+    "matplotlib>=3.4.0",
+    "Pillow>=8.0.0",
+    "scipy>=1.7.0",
+    "imageio>=2.9.0",
+]
+
+[project.scripts]
+droplet-assay = "app.cli:main"
+
+[tool.setuptools]
+packages = ["app", "gui"]
