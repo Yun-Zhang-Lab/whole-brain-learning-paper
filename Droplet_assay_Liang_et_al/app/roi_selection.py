@@ -31,7 +31,8 @@ def roi_method_dialog(analyzer):
     """
     win = tk.Toplevel(analyzer.root)
     win.title("Select ROI Method")
-    win.geometry("400x250")
+    win.geometry("500x220")
+    win.resizable(False, False)
     center_window(win)
 
     def on_close():
@@ -41,12 +42,24 @@ def roi_method_dialog(analyzer):
         analyzer.on_closing()
 
     win.protocol("WM_DELETE_WINDOW", on_close)
-    tk.Label(win, text="Select ROI extraction method:", font=("Helvetica", 12, "bold")).pack(pady=20)
-
-    tk.Button(win, text="Manual", font=8, width=20, height=2,
-              command=lambda: [win.destroy(), manual_roi(analyzer)]).pack(pady=5)
-    tk.Button(win, text="Automatic", font=8, width=20, height=2,
-              command=lambda: [win.destroy(), auto_roi(analyzer)]).pack(pady=5)
+    
+    # Title label
+    title_label = tk.Label(win, text="Select ROI extraction method:", font=("Helvetica", 14, "bold"))
+    title_label.grid(row=0, column=0, columnspan=2, pady=20)
+    
+    # Manual button
+    manual_btn = tk.Button(win, text="Manual", font=("Helvetica", 12), width=15, height=2,
+                           command=lambda: [win.destroy(), manual_roi(analyzer)])
+    manual_btn.grid(row=1, column=0, padx=15, pady=10, sticky="ew")
+    
+    # Automatic button
+    auto_btn = tk.Button(win, text="Automatic", font=("Helvetica", 12), width=15, height=2,
+                         command=lambda: [win.destroy(), auto_roi(analyzer)])
+    auto_btn.grid(row=1, column=1, padx=15, pady=10, sticky="ew")
+    
+    # Configure grid weights for equal column distribution
+    win.columnconfigure(0, weight=1)
+    win.columnconfigure(1, weight=1)
 
 def manual_roi(analyzer):
     """
@@ -62,7 +75,7 @@ def manual_roi(analyzer):
     num_roi = analyzer.custom_askinteger("Number of ROIs", "Enter number of ROIs:", initialvalue=12)
     if num_roi is None:
         analyzer.custom_print("ROI selection canceled.")
-        analyzer.on_closing()
+        analyzer.stop_processing = True
         return
 
     if analyzer.image is None:
@@ -78,18 +91,33 @@ def manual_roi(analyzer):
             except Exception as e:
                 print("Error", f"Failed to convert image: {str(e)}")
                 return False
-            
-    # Display image with interactive ROI selector overlay
-    fig, ax = plt.subplots()
-    ax.imshow(analyzer.image, cmap='autumn')
-    roi_selector = ROISelector(ax, num_roi)
-    plt.connect('key_press_event', lambda event: plt.close() if event.key == 'enter' else None)
-    plt.show()
+    
+    try:
+        # Display image with interactive ROI selector overlay
+        fig, ax = plt.subplots()
+        ax.imshow(analyzer.image, cmap='autumn')
+        roi_selector = ROISelector(ax, num_roi)
+        plt.connect('key_press_event', lambda event: plt.close() if event.key == 'enter' else None)
+        plt.show()
 
-    # Store selected ROI coordinates and worm flags
-    analyzer.roi_coords = roi_selector.roi_coords
-    analyzer.ignore_worm = roi_selector.ignore_worm
-    analyzer.process_images_and_signals()
+        # Check if user cancelled (closed window) or completed selection
+        if analyzer.stop_processing or not hasattr(roi_selector, 'roi_coords') or roi_selector.roi_coords is None:
+            print("ROI selection cancelled or incomplete.")
+            analyzer.stop_processing = True
+            return
+
+        # Store selected ROI coordinates and worm flags
+        analyzer.roi_coords = roi_selector.roi_coords
+        analyzer.ignore_worm = roi_selector.ignore_worm
+        analyzer.process_images_and_signals()
+    except Exception as e:
+        print(f"Error during manual ROI selection: {e}")
+        analyzer.stop_processing = True
+    finally:
+        try:
+            plt.close('all')
+        except Exception as e:
+            print(f"Error closing matplotlib windows: {e}")
 
 def auto_roi(analyzer):
     """
@@ -103,12 +131,19 @@ def auto_roi(analyzer):
         analyzer: DropletAssayAnalyzer instance with matching files and directory
     """
     # Sample images at regular intervals for circle detection efficiency
-    image_list = [
-            os.path.join(analyzer.directory, f)
-            for f in analyzer.matching_files[::100]
-            if os.path.basename(f).startswith('w1a')
-        ]
-    circles, annotated_img, _, _ = detect_circles_in_image(image_list)
+    # analyzer.matching_files already contains full paths
+    image_list = analyzer.matching_files[::100] if len(analyzer.matching_files) > 0 else []
+    
+    if not image_list:
+        print("[WARN] No images available for circle detection")
+        analyzer.roi_coords = []
+        analyzer.ignore_worm = []
+        return
+    
+    # In combined batch mode, save ROI detection files to top directory
+    # In separate mode and single mode, save to the respective directory (default behavior)
+    output_dir = analyzer.directory if (analyzer.batch_mode and analyzer.batch_analysis_mode == "combined") else None
+    circles, annotated_img, _, _ = detect_circles_in_image(image_list, output_dir=output_dir)
 
     # Convert detected circles to ROI rectangular coordinates
     padding = 5
@@ -125,11 +160,22 @@ def auto_roi(analyzer):
 
     # Initialize flags indicating which ROIs contain worms to ignore
     ignore_worm = [0] * len(roi_coords)
+    
+    # In batch mode, skip the manual dialog and display windows - use automatic processing
+    if analyzer.batch_mode:
+        print(f"[INFO] Batch mode: Using {len(roi_coords)} detected ROIs without manual filtering")
+        # Store ROI configuration
+        analyzer.roi_coords = roi_coords
+        analyzer.ignore_worm = ignore_worm
+        # Don't call process_images_and_signals() here in batch - let caller handle it
+        return
+    
+    # In single mode, show debug image and ask user which ROIs to ignore
     debug_img = display_debug_image(annotated_img, roi_coords, circles, analyzer.directory)
     
 
-    # Temporary root for the input dialog
-    temp_root = tk.Tk()
+    # Temporary root for the input dialog - use analyzer's root instead
+    temp_root = tk.Toplevel(analyzer.root)
     temp_root.withdraw()
     # Prompt user to specify which ROIs should be excluded from analysis
     input_dialog = CustomInputDialog(temp_root, "Enter ROIs to ignore (e.g. 1,3,5):", title="Ignore ROIs")
@@ -139,7 +185,10 @@ def auto_roi(analyzer):
     if user_input is None:
         print("Auto ROI dialog closed or canceled by user.")
         analyzer.stop_processing = True
-        analyzer.on_closing()
+        try:
+            temp_root.destroy()
+        except Exception as e:
+            print(f"Error destroying temp_root: {e}")
         return
 
     # Process user input to mark ROIs as ignored
@@ -158,8 +207,17 @@ def auto_roi(analyzer):
     else:
         CustomMessageBox(temp_root, "No ROIs were ignored.", title="No Input")
 
-    temp_root.destroy()
-    cv2.destroyAllWindows()
+    try:
+        temp_root.destroy()
+    except Exception as e:
+        print(f"Error destroying temp_root: {e}")
+    
+    # Only destroy OpenCV windows if they exist
+    try:
+        cv2.destroyAllWindows()
+    except Exception as e:
+        print(f"Error destroying cv2 windows: {e}")
+    
     # Display final ROI selection for verification
     display_selected_rois(annotated_img, roi_coords, circles, ignore_worm, analyzer.directory)
 

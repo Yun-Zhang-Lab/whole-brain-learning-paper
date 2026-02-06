@@ -16,7 +16,7 @@ class CustomInputDialog(tk.Toplevel):
         result (str): User's input text, or None if cancelled
         
     Features:
-        - Modal behavior (grab_set prevents parent interaction)
+        - Modal behavior
         - Auto-centered on screen
         - Default value support
         - Focus automatically set to input field
@@ -30,8 +30,8 @@ class CustomInputDialog(tk.Toplevel):
         Args:
             parent: Parent Tkinter widget 
             prompt: Instruction text displayed above input field
-            title: Dialog window title (default: "Input")
-            initialvalue: Pre-filled text in input field (default: empty string)
+            title: Dialog window title
+            initialvalue: Pre-filled text in input field
         """
         super().__init__(parent)
         self.title(title)
@@ -103,9 +103,6 @@ class CustomMessageBox(tk.Toplevel):
     """
     Custom modal message box for displaying information to users.
     
-    Provides a professional, centered message display dialog that extends
-    tk.Toplevel. 
-    
     Attributes:
         label (tk.Label): Message text widget with automatic wrapping
         ok_button (tk.Button): Single OK button to dismiss dialog
@@ -120,7 +117,7 @@ class CustomMessageBox(tk.Toplevel):
             parent: Parent Tkinter widget 
             message: Message text to display
             title: Dialog window title
-            msg_type: Message type indicator for future extensibility
+            msg_type: Message type indicator
         """
         super().__init__(parent)
         self.title(title)
@@ -192,6 +189,7 @@ class FrameSelectionDialog(simpledialog.Dialog):
         self.analyzer = analyzer
         self.initial_start = initial_start
         self.initial_end = initial_end
+        self.result = None  # Initialize result to None before dialog is shown
         super().__init__(parent, title=title)
 
     def body(self, master):
@@ -241,7 +239,7 @@ class FrameSelectionDialog(simpledialog.Dialog):
         2. Start frame >= 1 (valid indexing)
         3. End frame >= start frame (logical range)
         
-        If validation fails, displays error message and calls on_cancel.
+        If validation fails, displays error message and calls cancel.
         If successful, stores (start, end) tuple in self.result.
     
         """
@@ -252,17 +250,22 @@ class FrameSelectionDialog(simpledialog.Dialog):
             if start < 1 or end < start:
                 raise ValueError
             self.result = (start, end)
+            print(f"Frame selection confirmed: start={start}, end={end}")
         except ValueError:
             messagebox.showerror("Invalid Input", "Please enter valid integer values.")
             self.result = None
-            self.on_cancel()
+            self.cancel()
 
-    def on_cancel(self):
+    def cancel(self, event=None):
         """
-        Handle cancel action from dialog.
-    
+        Handle cancel action from dialog (X button or Cancel button).
+        
+        Override of simpledialog.Dialog.cancel() to safely close the dialog
+        and set stop_processing flag when user cancels or closes the window.
         """
-        print("Frame selection dialog canceled by the user.")
-        self.result = None
-        if self.analyzer is not None:
-            self.analyzer.stop_processing = True
+        if self.result is None:  # Only print if not already set by apply()
+            print("Frame selection dialog canceled by the user.")
+            if self.analyzer is not None:
+                self.analyzer.stop_processing = True
+        # Call parent cancel to properly close dialog
+        super().cancel(event)

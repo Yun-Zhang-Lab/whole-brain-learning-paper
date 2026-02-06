@@ -30,7 +30,7 @@ def imwrite_unicode(path, img, params=None):
     else:
         return False
 
-def detect_circles_in_image(image_file_path: Union[str, List[str], Tuple[str, ...]]):
+def detect_circles_in_image(image_file_path: Union[str, List[str], Tuple[str, ...]], output_dir: str = None):
     """
     Detect circular droplet ROIs using Hough circle detection on minimum image.
 
@@ -42,6 +42,9 @@ def detect_circles_in_image(image_file_path: Union[str, List[str], Tuple[str, ..
     ----------
     image_file_path : str | list[str] | tuple[str, ...]
         Single file path or list/tuple of image paths for min projection.
+    output_dir : str, optional
+        Directory where output files should be saved. If None, uses directory
+        of first image (default behavior).
     
     Returns
     -------
@@ -60,13 +63,13 @@ def detect_circles_in_image(image_file_path: Union[str, List[str], Tuple[str, ..
         paths = [p for p in image_file_path if isinstance(p, str) and os.path.isfile(p)]
         if not paths:
             raise FileNotFoundError("No valid image files provided.")
-        folder_path = os.path.dirname(paths[0])
+        folder_path = output_dir if output_dir else os.path.dirname(paths[0])
     else:
         # Single file path
         if not os.path.isfile(image_file_path):
             raise FileNotFoundError(f"Error: File {image_file_path} does not exist.")
         paths = [image_file_path]
-        folder_path = os.path.dirname(image_file_path)
+        folder_path = output_dir if output_dir else os.path.dirname(image_file_path)
 
     # Define output file paths
     csv_output_path = os.path.join(folder_path, "detected_ROIs.csv")

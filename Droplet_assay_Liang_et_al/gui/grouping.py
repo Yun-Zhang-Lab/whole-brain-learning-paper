@@ -51,33 +51,37 @@ class GroupingApp:
             print("Grouping selection dialog closed by the user.")
             nonlocal grouping_option
             grouping_option = None
-            dialog.destroy()
-            self.root.quit()
+            try:
+                dialog.destroy()
+            except Exception as e:
+                print(f"Error destroying dialog: {e}")
 
         grouping_option = None
         custom_grouping = None
 
         # Create grouping selection dialog
-        width = 400
-        height = 200
+        width = 500
+        height = 280
         dialog = tk.Toplevel(self.root)
         dialog.title("Grouping Selection")
         dialog.geometry(f"{width}x{height}")
+        dialog.resizable(False, False)
         center_window(dialog)
         dialog.protocol("WM_DELETE_WINDOW", on_closing_local)
 
         # 12 ROI configuration
         if num_roi == 12:
-            tk.Label(dialog, text="Select grouping option:", font=("Helvetica", 12, "bold")).grid(
-                row=0, column=0, columnspan=2, pady=(10, 10)
-            )
-            button1 = tk.Button(dialog, text="1) 1-3, 4-6, 7-9, 10-12", font=8, width=30, command=lambda: on_button_click("1"))
-            button2 = tk.Button(dialog, text="2) 1-6, 7-12", width=30, font=8, command=lambda: on_button_click("2"))
-            button3 = tk.Button(dialog, text="3) Custom grouping", width=30, font=8, command=lambda: on_button_click("3"))
-            button1.grid(row=1, column=0, padx=20, pady=5, sticky="ew")
-            button2.grid(row=2, column=0, padx=20, pady=5, sticky="ew")
-            button3.grid(row=3, column=0, padx=20, pady=5, sticky="ew")
-            dialog.columnconfigure(0, weight=1)
+            tk.Label(dialog, text="Select ROI Grouping Option:", font=("Helvetica", 14, "bold")).pack(pady=20)
+            
+            button_frame = tk.Frame(dialog)
+            button_frame.pack(pady=15, padx=20, fill=tk.BOTH, expand=True)
+            
+            button1 = tk.Button(button_frame, text="1) 1-3, 4-6, 7-9, 10-12", font=("Helvetica", 11), height=2, command=lambda: on_button_click("1"))
+            button2 = tk.Button(button_frame, text="2) 1-6, 7-12", font=("Helvetica", 11), height=2, command=lambda: on_button_click("2"))
+            button3 = tk.Button(button_frame, text="3) Custom grouping", font=("Helvetica", 11), height=2, command=lambda: on_button_click("3"))
+            button1.pack(pady=5, fill=tk.X)
+            button2.pack(pady=5, fill=tk.X)
+            button3.pack(pady=5, fill=tk.X)
             dialog.wait_window()
             
             if grouping_option == "1":
@@ -89,12 +93,14 @@ class GroupingApp:
             elif grouping_option == "3":
                 # Custom grouping input dialog
                 dialog = tk.Toplevel(self.root)
-                dialog.title("Custom Grouping")
-                dialog.geometry("400x150")
-                tk.Label(dialog, text="Enter custom groups separated by commas\n(e.g., '0-5,6-11'):", font=("Helvetica", 12)).pack(pady=(10, 5))
-                custom_entry = tk.Entry(dialog, width=40)
+                dialog.title("Custom ROI Grouping")
+                dialog.geometry("500x200")
+                dialog.resizable(False, False)
+                center_window(dialog)
+                tk.Label(dialog, text="Enter custom groups separated by commas\n(e.g., '0-5,6-11'):", font=("Helvetica", 12)).pack(pady=(20, 10))
+                custom_entry = tk.Entry(dialog, font=("Helvetica", 11), width=40)
                 custom_entry.pack(pady=5)
-                tk.Button(dialog, text="Submit", width=15, command=on_custom_submit).pack(pady=(5, 10))
+                tk.Button(dialog, text="Submit", font=("Helvetica", 12), width=15, height=2, command=on_custom_submit).pack(pady=(15, 10))
                 dialog.wait_window()
                 
                 if not custom_grouping:

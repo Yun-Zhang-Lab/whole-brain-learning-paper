@@ -19,7 +19,11 @@ def file_type_dialog(analyzer):
     Handle file selection and frame range configuration based on analysis mode.
     
     In batch mode: Automatically searches for matching files (no user dialog).
-    In single mode: Prompts user to select an image file and specify frame range.
+    
+    In single mode: Based on analysis type:
+    - 'single': Prompts user to select a specific folder to analyze
+    - 'timestamp': Prompts user to select a top directory containing timestamp folders,
+                    then recursively finds all images in subdirectories
     
     Args:
         analyzer: DropletAssayAnalyzer instance with current analysis configuration
@@ -34,18 +38,32 @@ def file_type_dialog(analyzer):
             return False
         return True
     
-    # Single mode - display file selection dialog
-    filename = select_image_file(analyzer.root)
-    if not filename:
+    # Single mode - determine analysis type and handle accordingly
+    analysis_type = getattr(analyzer, 'single_analysis_type', 'timestamp')
+    
+    if analysis_type == 'single':
+        # Single folder mode - select specific folder
+        directory = filedialog.askdirectory(
+            parent=analyzer.root,
+            title="Select Folder to Analyze"
+        )
+    else:  # 'timestamp'
+        # Timestamp folders mode - select top directory with timestamp folders
+        directory = select_top_directory(analyzer.root)
+    
+    if not directory:
         analyzer.stop_processing = True
         return False
     
-    analyzer.filename = filename
-    analyzer.directory = os.path.dirname(filename)
+    analyzer.directory = directory
     
-    # Get initial frame count for frame range dialog
-    initial_files = [f for f in os.listdir(analyzer.directory) 
-                   if f.lower().startswith('w1a') and f.lower().endswith('.jpg')]
+    # Find all matching files recursively
+    if not analyzer.find_matching_files():
+        analyzer.stop_processing = True
+        return False
+    
+    # Get initial frame count for display
+    num_files = len(analyzer.matching_files)
     
     # Prompt user to select frame range for analysis
     dialog = FrameSelectionDialog(
@@ -53,33 +71,51 @@ def file_type_dialog(analyzer):
         analyzer,
         title="Select Frame Range",
         initial_start=1,
-        initial_end=len(initial_files)
+        initial_end=num_files
     )
     
+    # Check if user cancelled the dialog
+    if dialog.result is None:
+        analyzer.stop_processing = True
+        return False
+    
     analyzer.istart, analyzer.iend = dialog.result
-    return analyzer.find_matching_files()
+    return True
 
 def select_image_file(parent, title="Select Image File"):
     """
-    Display file dialog for selecting a single image file.
-    
-    Filters dialog to show common image formats (JPG, PNG, TIFF).
+    Display dialog for selecting a top-level directory.
     
     Args:
         parent: Parent Tkinter widget (typically root window)
-        title: Dialog window title (default: "Select Image File")
+        title: Dialog window title (default: "Select Top Directory")
         
     Returns:
-        Full path to selected file, or empty string if cancelled
+        Full path to selected directory, or empty string if cancelled
     """
-    filetypes = [
-        ("Image files", "*.jpg;*.jpeg;*.png;*.tiff;*.tif"),
-        ("All files", "*.*")
-    ]
-    return filedialog.askopenfilename(
+    return filedialog.askdirectory(
         parent=parent,
-        title=title,
-        filetypes=filetypes
+        title=title
+    )
+
+
+def select_top_directory(parent, title="Select Top Directory"):
+    """
+    Display dialog for selecting a top-level directory to search for images.
+    
+    Allows user to choose a directory, which will be recursively searched for
+    all images starting with 'w1a' in all subdirectories.
+    
+    Args:
+        parent: Parent Tkinter widget (typically root window)
+        title: Dialog window title
+        
+    Returns:
+        Full path to selected directory, or empty string if cancelled
+    """
+    return filedialog.askdirectory(
+        parent=parent,
+        title=title
     )
 
 def setup_batch_processing(analyzer, directories):

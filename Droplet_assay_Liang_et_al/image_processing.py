@@ -21,18 +21,30 @@ def compute_minimum_image(directory, matching_files):
     Compute minimum intensity projection across image sequence.
     
     Samples frames at regular intervals to reduce noise and suppress bright noise.
+    Handles both full file paths and relative filenames.
     
     Returns:
         imgmin: Minimum intensity image
         numframes: Total number of frames in sequence
     """
-    first_image = io.imread(os.path.join(directory, matching_files[0]))
+    # Determine if matching_files contains full paths or just filenames
+    first_file = matching_files[0]
+    if os.path.isabs(first_file):
+        first_path = first_file
+    else:
+        first_path = os.path.join(directory, first_file)
+    
+    first_image = io.imread(first_path)
     imgmin = 255 * np.ones(first_image.shape, dtype=np.float32)
     numframes = len(matching_files)
     skip = max(1, numframes // 10)  # Sample every ~10% of frames
     for i in range(0, numframes, skip):
         image_name = matching_files[i]
-        img = io.imread(os.path.join(directory, image_name)).astype(np.float32)
+        if os.path.isabs(image_name):
+            img_path = image_name
+        else:
+            img_path = os.path.join(directory, image_name)
+        img = io.imread(img_path).astype(np.float32)
         imgmin = np.minimum(img, imgmin)
     return imgmin, numframes
 
@@ -43,6 +55,7 @@ def process_frame(frame_args):
     
     Performs background subtraction, disk-based filtering, adaptive thresholding,
     and connected component analysis to extract area, centroid, and eccentricity.
+    Handles both full file paths and relative filenames.
     
     Returns:
         index: Frame index
@@ -50,8 +63,14 @@ def process_frame(frame_args):
     """
     (index, image_name, directory, imgmin_dilate, roi_coords, ignore_worm,
      mask_multiplier, img_threshold, radius) = frame_args
+    
+    # Determine if image_name is a full path or relative filename
+    if os.path.isabs(image_name):
+        img_path = image_name
+    else:
+        img_path = os.path.join(directory, image_name)
      
-    img_full = io.imread(os.path.join(directory, image_name)).astype(np.float32)
+    img_full = io.imread(img_path).astype(np.float32)
     # Background subtraction: subtract dilated minimum image
     img_diff = img_full - mask_multiplier * imgmin_dilate
     img_diff[img_diff < 0] = 0

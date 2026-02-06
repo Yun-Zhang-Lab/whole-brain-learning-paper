@@ -72,11 +72,11 @@ venv.bak/
 *~
 .DS_Store
 
-# Project specific
-results/
-data/
-*.tif
-*.tiff
-*.png
-*.jpg
-*.jpeg
+# # Project specific
+# results/
+# data/
+# *.tif
+# *.tiff
+# *.png
+# *.jpg
+# *.jpeg

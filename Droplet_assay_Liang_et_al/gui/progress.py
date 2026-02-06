@@ -28,11 +28,13 @@ def create_progress_bar(analyzer, total):
     progress_window.update()
 
     def on_closing_local():
-        """Handle window close - stops processing."""
+        """Handle window close - stops processing but doesn't close main app."""
         print("Progress window closed by the user.")
         analyzer.stop_processing = True
-        progress_window.destroy()
-        analyzer.on_closing()
+        try:
+            progress_window.destroy()
+        except Exception as e:
+            print(f"Error destroying progress window: {e}")
        
     progress_window.protocol("WM_DELETE_WINDOW", on_closing_local)
 

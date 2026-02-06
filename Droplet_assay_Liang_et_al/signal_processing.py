@@ -208,6 +208,6 @@ def process_signals_and_analyze(bw_Eccentricity, bw_Centroid, bw_Area, roi_coord
     processor = SignalProcessor(bw_Eccentricity, bw_Centroid, bw_Area, roi_coords)
     valid_turns, invalid_data = processor.process_signals(params)
 
-    # Invoke analysis callback (e.g., analyze_turns) for downstream processing
+    # Invoke analysis callback for downstream processing
     analyze_turns_callback(valid_turns, invalid_data)
     return valid_turns, invalid_data

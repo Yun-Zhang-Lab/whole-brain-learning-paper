@@ -41,6 +41,7 @@ setup(
         "Pillow>=8.0.0",
         "scipy>=1.7.0",
         "imageio>=2.9.0",
+        "openpyxl>=3.0.0",
     ],
     entry_points={
         "console_scripts": [
