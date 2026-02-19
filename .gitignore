@@ -6,6 +6,7 @@
 # !*.ipynb
 
 limbo/
+data/
 !*.ipynb
 
 # Except this folder
