@@ -1,0 +1,23 @@
+# Core scientific stack
+numpy>=1.20.0
+pandas>=1.3.0
+scipy>=1.7.0
+matplotlib>=3.4.0
+seaborn>=0.11.0
+
+# Image processing / droplet assay
+scikit-image>=0.18.0
+opencv-python>=4.5.0
+Pillow>=8.0.0
+imageio>=2.9.0
+openpyxl>=3.0.0
+
+# Graph / ML
+networkx>=2.6
+torch>=1.9.0
+
+# To run analysis notebooks
+jupyter
+
+# CeDNe (install from GitHub)
+git+https://github.com/sahilm89/CeDNe.git@main#egg=cedne
