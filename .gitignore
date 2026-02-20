@@ -14,6 +14,9 @@ processed/
 Supplementary online material
 Supplementary online material/*.pdf
 
+CeDNe.log
+debug_log.txt
+
 # Output/
 # pickles/
 # temp/

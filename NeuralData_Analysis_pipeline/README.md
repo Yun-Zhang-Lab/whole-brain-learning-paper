@@ -45,10 +45,10 @@ whole-brain-learning-paper/
 | 00 | `00-make_pickle_from_raw_data` | Import raw experiment files (csv/xlsx), parse metadata, and save cleaned datasets as `.cedne` pickle files. | — |
 | 01 | `01-left-right-differences` | Compute left-vs-right differences in neural data; produce summary statistics and visualizations for lateralized activity. | — |
 | 02 | `02-promoter-positions` | Analyze promoter/marker positions across samples. Uses CeDNe to create anatomical layouts for recorded neurons. | Fig. 1d |
-| 03 | `03-heatmaps` | Generate activity heatmaps and test neural activation upon odor stimulation. | Fig. 1f,g; Ext. Data Fig. 3, 4a–c,j,k |
+| 03 | `03-heatmaps` | Generate activity heatmaps and test neural activation upon odor stimulation. | Fig. 1f,g; Ext. Data Fig. 3, 4a–c,j,k; Supplementary Fig 1,2 |
 | 04 | `04-Complete-Tensors-...` | Build complete data tensors from partial observations via filtering, wavelet denoising, and imputation. | — |
 | 05 | `05-Temporal-Components` | Extract Temporal Components (SVD), visualize neuron scores, fit a Linear Dynamical System, and save TCs. | Fig. 2a–d; Ext. Data Fig. 5a–h |
-| 06 | `06-dropletassay-eccentricity` | Analyze worm body eccentricity from droplet-assay data and compare behavioral traces to neural Temporal Components. | Fig. 2e |
+| 06 | `06-dropletassay-eccentricity` | Analyze worm body eccentricity from droplet-assay data and compare behavioral traces to neural Temporal Components. | Fig. 2e,f |
 | 07 | `07-Neural-components-geometry` | Extract Neural Components (SVD along neuron dimension), visualize loadings, variance explained, and geometric changes with learning. | Fig. 5a,b; Ext. Data Fig. 10a–c; Supp. Fig. 9; Supp. Data 2 |
 | 08 | `08-control-theory-framework` | Apply control-theory analyses to neural dynamics to identify fixed points. | Fig. 5c,d; Ext. Data Fig. 10d,e |
 
