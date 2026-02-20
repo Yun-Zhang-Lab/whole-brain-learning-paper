@@ -7,9 +7,10 @@
 
 limbo/
 data/
+scripts/
 !*.ipynb
-
-# Except this folder
+pickles/
+processed/
 Supplementary online material
 Supplementary online material/*.pdf
 

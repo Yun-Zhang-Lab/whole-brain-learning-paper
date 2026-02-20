@@ -42,11 +42,46 @@ Example image data is included in the \example_data\ folder (unzip to acess the 
    - Run the analysis on all images
 5. View results and export to CSV/Excel
 
+### Expected Output
 
-## Requirements
+- CSV files with per-frame eccentricity measurements for each ROI
+- Excel workbook with turn times, turn counts, and choice indices
+- TXT file with turn rates
 
-- Python 3.8 or higher
-- Dependencies: numpy, pandas, scikit-image, opencv-python, matplotlib, Pillow, scipy, imageio
+### Expected Run Time (Demo)
+
+~5 minutes on a standard desktop for the included example dataset (~7200 frames).
+
+
+## System Requirements
+
+### Software Dependencies
+- Python ≥ 3.8 (tested on 3.10, 3.12)
+- numpy ≥ 1.20, pandas ≥ 1.3, scikit-image ≥ 0.18, opencv-python ≥ 4.5, matplotlib ≥ 3.4, Pillow ≥ 8.0, scipy ≥ 1.7, imageio ≥ 2.9, openpyxl ≥ 3.0
+
+### Operating Systems
+- macOS 13+ (tested on macOS 14 Sonoma)
+- Linux (tested on Ubuntu 22.04)
+- Windows 10/11 (not tested, expected to work)
+
+### Hardware
+- No non-standard hardware required
+- A display is required for the GUI-based ROI selection
+
+## Installation
+
+```bash
+cd DropletAssay_analysis_software
+pip install -e .
+```
+
+**Typical install time:** < 2 minutes on a standard desktop.
+
+### Launch the Application
+
+```bash
+droplet-assay
+```
 
 ## Module Overview
 
